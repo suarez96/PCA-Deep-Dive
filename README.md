@@ -1,4 +1,6 @@
-# Principal Component Analysis (PCA)
+# Weekend Project: Principal Component Analysis (PCA)
+
+For full notebook interactivity and better formatted markdown: https://nbviewer.org/github/suarez96/PCA-Deep-Dive/blob/dev/derivation_notebook.ipynb
 
 The idea behind Principal component anaylsis (PCA) is to take a set of data in $D$-dimensional space, and capture as much of the information (variance) in these data as possible as linear combinations of the dimensions as possible. This allows us to greatly reduce the problem space, in particular for data with many superfluous dimensions where most of the variation can be explained through a few orthogonal linear combinations of features. This process is analogous to lossy compression, where if we use all the available dimensions, decompressing will fully recover the original data. That said, as we limit the number of linear combinations we use, we are able to capture almost the entire information with fewer data points, but unable to fully recover the original data after decompression. 
 
@@ -36,12 +38,12 @@ where $\hat{x_i}$ equals the projection of $x_i$ onto the unit vector $U_a$ , mu
 $$\hat{x_i} = (x_i \cdot U_a) U_a$$
 Squared error for a single sample, therefore becomes,
 
-$$||\hat{x_i}-x_i||^2 = {||(x_i \cdot U_a) U_a - x_i||^2}\\
-= ((x_i \cdot U_a) U_a - x_i)((x_i \cdot U_a) U_a - x_i) \\
-= ((x_i \cdot U_a) U_a)^2 \underbrace{- x_i \cdot (x_i \cdot U_a) U_a - (x_i \cdot U_a) U_a \cdot x_i}_{\text{rearrange dot products} \rightarrow -2(x_i \cdot U_a)(x_i \cdot U_a)=-2(x_i \cdot U_a)^2}  + \underbrace{x_i\cdot x_i}_{=||x_i||^2} \\
-= (x_i \cdot U_a)^2 \underbrace{U_a \cdot U_a}_{||U_a||^2=1^2=1} - 2(x_i \cdot U_a)^2 + ||x_i||^2\\
-= (x_i \cdot U_a)^2 - 2(x_i \cdot U_a)^2 + ||x_i||^2\\
-= ||x_i||^2 - (x_i \cdot U_a)^2$$
+$$||\hat{x_i}-x_i||^2 = {||(x_i \cdot U_a) U_a - x_i||^2}$$
+$$= ((x_i \cdot U_a) U_a - x_i)((x_i \cdot U_a) U_a - x_i) $$
+$$= ((x_i \cdot U_a) U_a)^2 \underbrace{- x_i \cdot (x_i \cdot U_a) U_a - (x_i \cdot U_a) U_a \cdot x_i}_{\text{rearrange dot products} \rightarrow -2(x_i \cdot U_a)(x_i \cdot U_a)=-2(x_i \cdot U_a)^2}  + \underbrace{x_i\cdot x_i}_{=||x_i||^2} $$
+$$= (x_i \cdot U_a)^2 \underbrace{U_a \cdot U_a}_{||U_a||^2=1^2=1} - 2(x_i \cdot U_a)^2 + ||x_i||^2$$
+$$= (x_i \cdot U_a)^2 - 2(x_i \cdot U_a)^2 + ||x_i||^2$$
+$$= ||x_i||^2 - (x_i \cdot U_a)^2$$
 
 Over all terms, the mean squared error is then defined as
 
