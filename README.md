@@ -11,7 +11,7 @@ Through PCA we are creating a matrix that will project our original data $x$ ont
 
 ## Computation of PCA and Inverse PCA
 
-For now, it is only important to know that each column in $U$ is an eigenvector of the feature correlation matrix of $\mathbf{x}$. We justify this statement in the following section. 
+For now, it is only important to know that each column in $U$ is an eigenvector of the feature correlation matrix of $\mathbf{x}$, and that it is orthonormal. We justify this statement in the following section. 
 
 For the block matrix
 $$U = \begin{bmatrix}
@@ -22,7 +22,7 @@ We can create a projection $\mathbf{p}$ of our original data vector $\mathbf{x} 
 
 $$ \mathbf{p}=\mathbf{x}U_a \tag{1.1}$$
 
-We postulate that our transformation matrix, $U \in \mathbb{R}^D$, is an orthonormal basis, and therefore unitary, such that $UU^T=I_D$ ($I_D$ is the $D$-dimensional identity matrix). This property implies that $U_a^T = U_a^{-1}$, which we will use to efficiently compute the inverse PCA transformation of our projected data $\mathbf{p}$, through the operation:
+We posit that our transformation matrix, $U \in \mathbb{R}^D$, is an orthonormal basis, and therefore unitary, such that $UU^T=I_D$ ($I_D$ is the $D$-dimensional identity matrix). This property implies that $U_a^T = U_a^{-1}$, which we will use to efficiently compute the inverse PCA transformation of our projected data $\mathbf{p}$, through the operation:
 
 $$\hat{\mathbf{x}} = \mathbf{p}U_a^{-1} = \mathbf{p}U_a^T \tag{1.2}$$ 
 
