@@ -4,11 +4,14 @@ I am aware there are still a few inconsistencies in notation. The aim of this we
 
 For full notebook interactivity and better formatted markdown: https://nbviewer.org/github/suarez96/PCA-Deep-Dive/blob/main/derivation_notebook.ipynb
 
-The goal of principal component anaylsis (PCA) is to take a set of data in $D$-dimensional space, and compress it into as few dimensions as possible while still retaining the maximum amount of information. The reduced dimensions attempt to maximize retained information, measured as explained variance, through linear combinations of the original features. Successful applications of PCA allow us to greatly reduce the problem space, in particular for data with many superfluous dimensions where most of the variation can be explained through a few orthogonal linear combinations of features. This process is analogous to lossy compression, where if we use all the available dimensions, decompressing will fully recover the original data. Likewise, as we limit the size of the reduced dimensions, we attempt to capture almost the entire information with fewer data points, but are unable to fully recover the original data after decompression. 
+The goal of principal component anaylsis (PCA) is to take a set of data in $D$-dimensional space, and compress it into as few dimensions as possible while still retaining the maximum amount of information. The reduced dimensions attempt to maximize retained information, measured as explained variance, through linear combinations of the original features. Successful applications of PCA allow us to greatly reduce the problem space, in particular for data with many superfluous dimensions where most of the variation can be explained through a few orthogonal linear combinations of features. 
 
-It is important to highlight that we are not simply selecting some features with weight 1 and others with weight 0, but we are creating a matrix that will project our original data $x$ onto a $k$-dimensional subspace where hopefully our data's important characteristics remain unchanged. We call this matrix $U_a$ and it is defined as the $k$-leftmost columns of the matrix $U$, where $k$ is our number of selected principal components. $k$ will also be the resulting dimension of our data after 'compression'. More detail follows:
+Through PCA we are creating a matrix that will project our original data $x$ onto a $k$-dimensional subspace where (ideally) our data's important characteristics still remain. Our projection matrix $U_a$ will be defined by the $k$-leftmost columns of the matrix $U$ (more detail below). $k$ is our number of selected principal components. This process is analogous to lossy compression, where the projection onto a lower-dimensional subspace will provide significant computational benefit or allow for simpler modeling, but we will be unable to fully recover the original data after decompression. The limiting case is that when we use all the available dimensions, decompressing will fully recover the original data, but no dimensioniality reduction will have been accomplished. 
+
 
 ## Computation of PCA and Inverse PCA
+
+For now, it is only important to know that each column in $U$ is an eigenvector of the feature correlation matrix of $\mathbf{x}$. We justify this statement in the following section. 
 
 For the block matrix
 $$U = \begin{bmatrix}
@@ -19,21 +22,18 @@ We can create a projection $\mathbf{p}$ of our original data vector $\mathbf{x} 
 
 $$ \mathbf{p}=\mathbf{x}U_a \tag{1.1}$$
 
-Note that our transformation matrix $U \in \mathbb{R}^D$ is an orthonormal basis, and therefore unitary, such that $UU^T=I_D$ ($I_D$ is the $D$-dimensional identity matrix). This property implies that $U_a^T = U_a^{-1}$, which we will use to efficiently compute the inverse PCA transformation of our projected data $\mathbf{p}$, through the operation:
+We postulate that our transformation matrix, $U \in \mathbb{R}^D$, is an orthonormal basis, and therefore unitary, such that $UU^T=I_D$ ($I_D$ is the $D$-dimensional identity matrix). This property implies that $U_a^T = U_a^{-1}$, which we will use to efficiently compute the inverse PCA transformation of our projected data $\mathbf{p}$, through the operation:
 
 $$\hat{\mathbf{x}} = \mathbf{p}U_a^{-1} = \mathbf{p}U_a^T \tag{1.2}$$ 
 
-Note that while $U_a$ is not guaranteed to be unitary, $U_aU_a^T$ should approach $I_D$ as more components are added. When all components are included, naturally, the equality is satisfied, since $U_a$ becomes $U$. 
-
-$U_a\rightarrow U$, $\hat{\mathbf{x}} = \mathbf{p}U_a^T = \mathbf{x}U_aU_a^T \rightarrow xUU^T = \mathbf{x}$
-
-Under a well-suited PCA fit ,$\hat{\mathbf{x}}$, our reconstructed data point, will be close to $\mathbf{x}$. We can measure this distance, known as the 'reconstruction error', through the mean squared error (MSE) of our reconstructed data to our original data vector $\mathbf{x}$.
+Under a well-suited PCA use case, $\hat{\mathbf{x}}$, our reconstructed data point, will be close to $\mathbf{x}$ even when we only use a small number of columns to build $U_a$. We can measure this distance, known as the 'reconstruction error', through the mean squared error (MSE) to our original data vector $\mathbf{x}$.
 
 $$MSE=\frac{\sum_{i=0}^{N}(\hat{x}_{i}-x_{i})^2}{N}$$
 
 
 ## Mathematical Derivation
-It is fairly common knowledge that PCA can be achieved through the eigendecomposition of the feature correlation matrix, but it is less commonly known that this explained-variance-maximization is equivalent to the minimization of the MSE. The proof is as follows:
+
+PCA can be achieved through the eigendecomposition of the feature correlation matrix, and this explained-variance-maximization is equivalent to the minimization of the MSE. The proof is as follows:
 
 Start with a vector $\mathbf{x}$ and its reconstruction $\text{PCA}(\mathbf{x}) = \mathbf{p} \rightarrow \text{Inverse PCA}(\mathbf{p}) = \hat{\mathbf{x}}$. To minimize $MSE(\hat{\mathbf{x}})$ we setup the following unconstrained optimization:
 
@@ -101,7 +101,7 @@ $$\frac{\partial\mathbb{L}}{\partial{\mathbf{u}}}=\frac{\partial{\mathbf{u}^TR_{
 
 $$\therefore R_{\mathbf{x}^T}\mathbf{u}=\nu \mathbf{u}$$
 
-We know that for a scalar $\lambda$, a matrix $A$ and vector $\mathbf{v}$, if $A\mathbf{v}=\lambda \mathbf{v}$ then $\mathbf{v}$ is an eigenvector of $A$ with corresponding eigenvalue $\lambda$. It is trivial to see now that to maximize the variance in our optimization problem, we pick the eigenvector of $R_{\mathbf{x}^T}$, $\mathbf{u}$ with largest corresponding eigenvalue $\nu$. Q.E.D.
+We know that for a scalar $\lambda$, a matrix $A$ and vector $\mathbf{v}$, if $A\mathbf{v}=\lambda \mathbf{v}$ then $\mathbf{v}$ is an eigenvector of $A$ with corresponding eigenvalue $\lambda$. It is trivial to see that the eigenvector of $R_{\mathbf{x}^T}$, $\mathbf{u}$ with largest corresponding eigenvalue $\nu$, maximizes our optimization problem. Q.E.D.
 
 Helpful resources: 
 - Boyd, Stephen, Stephen P. Boyd, and Lieven Vandenberghe. Convex optimization. Cambridge university press, 2004.
