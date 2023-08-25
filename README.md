@@ -2,11 +2,13 @@
 
 I am aware there are still a few inconsistencies in notation. The aim of this weekend project was to provide a straightforward example of a PCA use case, and to see how far we could get in a single weekend. Markdown has been cleaned up, but no code changes have been made since Sunday, March 5th.
 
-For full notebook interactivity and better formatted markdown: https://nbviewer.org/github/suarez96/PCA-Deep-Dive/blob/main/derivation_notebook.ipynb
+UPDATE August 25th: [ChirPCA INTERACTIVE NOTEBOOK](https://nbviewer.org/github/suarez96/PCA-Deep-Dive/blob/main/ChirPCA/ChirPCA.ipynb) with much more interesting BirdCLEF data.
+
+[INTERACTIVE DERIVATION NOTEBOOK](https://nbviewer.org/github/suarez96/PCA-Deep-Dive/blob/main/derivation_notebook.ipynb) (with better formatted markdown)
 
 The goal of principal component anaylsis (PCA) is to take a set of data in $D$-dimensional space, and compress it into as few dimensions as possible while still retaining the maximum amount of information. The reduced dimensions attempt to maximize retained information, measured as explained variance, through linear combinations of the original features. Successful applications of PCA allow us to greatly reduce the problem space, in particular for data with many superfluous dimensions where most of the variation can be explained through a few orthogonal linear combinations of features. 
 
-Through PCA we are creating a matrix that will project our original data $x$ onto a $k$-dimensional subspace where (ideally) our data's important characteristics still remain. Our projection matrix $U_a$ will be defined by the $k$-leftmost columns of the matrix $U$ (more detail below). $k$ is our number of selected principal components. This process is analogous to lossy compression, where the projection onto a lower-dimensional subspace will provide significant computational benefit or allow for simpler modeling, but we will be unable to fully recover the original data after decompression. The limiting case is that when we use all the available dimensions, decompressing will fully recover the original data, but no dimensioniality reduction will have been accomplished. 
+Through PCA we are creating a matrix that will project our original data $x$ onto a $k$-dimensional subspace where (ideally) our data's important characteristics still remain. Our projection matrix $\mathbf{U}_a$ will be defined by the $k$-leftmost columns of the matrix $\mathbf{U}$ (more detail below). $k$ is our number of selected principal components. This process is analogous to lossy compression, where the projection onto a lower-dimensional subspace will provide significant computational benefit or allow for simpler modeling, but we will be unable to fully recover the original data after decompression. The limiting case is that when we use all the available dimensions, decompressing will fully recover the original data, but no dimensioniality reduction will have been accomplished. 
 
 
 ## Computation of PCA and Inverse PCA
@@ -14,19 +16,19 @@ Through PCA we are creating a matrix that will project our original data $x$ ont
 For now, it is only important to know that each column in $U$ is an eigenvector of the feature correlation matrix of $\mathbf{x}$, and that it is orthonormal. We justify this statement in the following section. 
 
 For the block matrix
-$$U = \begin{bmatrix}
-\overbrace{U_{a}}^{\text{PC's}} & \overbrace{U_{b}}^{\text{excluded PC's}}
+$$\mathbf{U} = \begin{bmatrix}
+\overbrace{\mathbf{U}_{a}}^{\text{PC's}} & \overbrace{\mathbf{U}_{b}}^{\text{excluded PC's}}
 \end{bmatrix}
 $$
 We can create a projection $\mathbf{p}$ of our original data vector $\mathbf{x} \in R^{N \times 1}$ onto our new subspace through the operation
 
-$$ \mathbf{p}=\mathbf{x}U_a \tag{1.1}$$
+$$ \mathbf{p}=\mathbf{x}^T \mathbf{U}_a \tag{1.1}$$
 
-We posit that our transformation matrix, $U \in \mathbb{R}^D$, is an orthonormal basis, and therefore unitary, such that $UU^T=I_D$ ($I_D$ is the $D$-dimensional identity matrix). This property implies that $U_a^T = U_a^{-1}$, which we will use to efficiently compute the inverse PCA transformation of our projected data $\mathbf{p}$, through the operation:
+We posit that our transformation matrix, $U \in \mathbb{R}^D$, is an orthonormal basis, and therefore unitary, such that $\mathbf{U}\mathbf{U}^T=\mathbf{I}_D$ ($\mathbf{I}_D$ is the $D$-dimensional identity matrix). This property implies that by adding more and more PC's, $\mathbf{U}_a \rightarrow \mathbf{U}$ and $\mathbf{U}_a \mathbf{U}_a^T \rightarrow \mathbf{I}$. We will use this fact to compute the inverse PCA transformation of our projected data $\mathbf{p}$, through the operation:
 
-$$\hat{\mathbf{x}} = \mathbf{p}U_a^{-1} = \mathbf{p}U_a^T \tag{1.2}$$ 
+$$\hat{\mathbf{x}} = \mathbf{p}\mathbf{U}_a^T \tag{1.2}$$ 
 
-Under a well-suited PCA use case, $\hat{\mathbf{x}}$, our reconstructed data point, will be close to $\mathbf{x}$ even when we only use a small number of columns to build $U_a$. We can measure this distance, known as the 'reconstruction error', through the mean squared error (MSE) to our original data vector $\mathbf{x}$.
+Under a well-suited PCA use case, $\hat{\mathbf{x}}$, our reconstructed data point, will be close to $\mathbf{x}$ even when we only use a small number of columns to build $\mathbf{U}_a$. We can measure this distance, known as the 'reconstruction error', through the mean squared error (MSE) to our original data vector $\mathbf{x}$.
 
 $$MSE=\frac{\sum_{i=0}^{N}(\hat{x}_{i}-x_{i})^2}{N}$$
 
@@ -38,13 +40,13 @@ PCA can be achieved through the eigendecomposition of the feature correlation ma
 Start with a vector $\mathbf{x}$ and its reconstruction $\text{PCA}(\mathbf{x}) = \mathbf{p} \rightarrow \text{Inverse PCA}(\mathbf{p}) = \hat{\mathbf{x}}$. To minimize $MSE(\hat{\mathbf{x}})$ we setup the following unconstrained optimization:
 
 $$\text{minimize} \quad {\frac{\sum_{i=1}^{N}||\hat{x_i}-x_i||^2}{N}}$$
-where $\hat{x_i}$ equals the projection of $x_i$ onto the unit vector $\mathbf{u} \in U_a$ , multiplied by $\mathbf{u}$. ie:
+where $\hat{x_i}$ equals the projection of $x_i$ onto the unit vector $\mathbf{u} \in \mathbf{U}_a$ , multiplied by $\mathbf{u}$. ie:
 $$\hat{x_i} = (x_i \cdot \mathbf{u}) \mathbf{u}$$
 Squared error for a single sample, therefore becomes,
 
 $$||\hat{x_i}-x_i||^2 = {||(x_i \cdot \mathbf{u}) \mathbf{u} - x_i||^2}$$
-$$= ((x_i \cdot \mathbf{u}) U_a - x_i)((x_i \cdot \mathbf{u}) \mathbf{u} - x_i) $$
-$$= ((x_i \cdot \mathbf{u}) \mathbf{u})^2 \underbrace{- x_i \cdot (x_i \cdot U_a) \mathbf{u} - (x_i \cdot \mathbf{u}) U_a \cdot x_i}_{\text{rearrange dot products} \rightarrow -2(x_i \cdot \mathbf{u})(x_i \cdot \mathbf{u})=-2(x_i \cdot \mathbf{u})^2}  + \underbrace{x_i\cdot x_i}_{=||x_i||^2} $$
+$$= ((x_i \cdot \mathbf{u}) \mathbf{U}_a - x_i)((x_i \cdot \mathbf{u}) \mathbf{u} - x_i) $$
+$$= ((x_i \cdot \mathbf{u}) \mathbf{u})^2 \underbrace{- x_i \cdot (x_i \cdot \mathbf{U}_a) \mathbf{u} - (x_i \cdot \mathbf{u}) \mathbf{U}_a \cdot x_i}_{\text{rearrange dot products} \rightarrow -2(x_i \cdot \mathbf{u})(x_i \cdot \mathbf{u})=-2(x_i \cdot \mathbf{u})^2}  + \underbrace{x_i\cdot x_i}_{=||x_i||^2} $$
 $$= (x_i \cdot \mathbf{u})^2 \underbrace{\mathbf{u} \cdot \mathbf{u}}_{||\mathbf{u}||^2=1^2=1} - 2(x_i \cdot \mathbf{u})^2 + ||x_i||^2$$
 $$= (x_i \cdot \mathbf{u})^2 - 2(x_i \cdot \mathbf{u})^2 + ||x_i||^2$$
 $$= ||x_i||^2 - (x_i \cdot \mathbf{u})^2$$
@@ -54,12 +56,12 @@ Over all terms, the mean squared error is then defined as
 $$\frac{\sum_{i=1}^{N}||x_i||^2 - (x_i \cdot \mathbf{u})^2}{N} $$
 $$ = \frac{\sum_{i=1}^{N}||x_i||^2}{N} - \frac{\sum_{i=1}^{N}(x_i \cdot \mathbf{u})^2}{N} \tag{2.1}$$
 
-Note that the first term in eq $(2.1)$ is always going to be non-negative and is not going to depend on our choice of $U_a$, meaning that the problem 
+Note that the first term in eq $(2.1)$ is always going to be non-negative and is not going to depend on our choice of $\mathbf{U}_a$, meaning that the problem 
 $$\text{minimize} \quad {\frac{\sum_{i=1}^{N}||\hat{x_i}-x_i||^2}{N}}$$
 is equivalent to maximizing the second term in eq. $(2.1)$.
 $$\text{maximize} \quad \frac{\sum_{i=1}^{N}(x_i \cdot \mathbf{u})^2}{N} \tag{2.2}$$
 Here we make note of the variance formula for a vector $\mathbf{v}$. $Var(\mathbf{v})=E[\mathbf{v}^2]-E[\mathbf{v}]^2$. For our vector of projections, we have
-$\mathbf{p} = \mathbf{x} U_a = \begin{bmatrix} 
+$\mathbf{p} = \mathbf{x} \mathbf{U}_a = \begin{bmatrix} 
 x_1 \cdot \mathbf{u}\\
 x_2 \cdot \mathbf{u}\\
 ... \\
